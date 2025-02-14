@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ConsumingAPI_Project.Model;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,32 +20,86 @@ namespace ConsumingAPI_Project.Controllers
 
         // GET: api/<HttpController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        [Route("Get/AllObject")]
+        public async Task<List<APIObject>> GetAPIObjectsAsync()
         {
-            return new string[] { "value1", "value2" };
+            List<APIObject> apiObjects = new List<APIObject>();
+
+            var httpClient = new HttpClient();
+
+               var response = await httpClient.GetAsync("https://restful-api.dev/Object");
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    apiObjects = JsonConvert.DeserializeObject<List<APIObject>>(apiResponse);
+                }
+            
+            return apiObjects;
         }
 
         // GET api/<HttpController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{id}Get/requestById")]
+
+        public async Task<APIObject> GetObjectIdAsync(string Id)
         {
-            return "value";
+            APIObject aPIObject = new APIObject();
+            var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync("https://api.restful-api.dev/objects?id=3&id=5&id=10" + Id);
+            {
+                string apiResponse = await response.Content.ReadAsStringAsync();
+                aPIObject = JsonConvert.DeserializeObject<APIObject>(apiResponse);
+            }
+            return aPIObject;
         }
 
-        // POST api/<HttpController>
+
+            // POST api/<HttpController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<APIObject> CreatedObjectAsync (CreateAPIObjectRequest request)
+
         {
+            APIObject aPIObject = new APIObject();
+            var httpClient = new HttpClient();
+            var json = JsonConvert.SerializeObject(request);
+
+            var content = new StringContent(json, Encoding.UTF8, "https://api.restful-api.dev/objects");
+
+            var response = await httpClient.PostAsync("https://api.restful-api.dev/objects", content);
+
+            response.EnsureSuccessStatusCode();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<APIObject>(responseJson);
         }
+
 
         // PUT api/<HttpController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<APIObject> UpdateObjectAsync(string id, UpdateAPIObject updateAPIObject)
         {
+            var httpClient = new HttpClient();
+            var json = JsonConvert.SerializeObject(updateAPIObject);
+
+            var content = new StringContent(json, Encoding.UTF8, "https://api.restful-api.dev/objects");
+
+            var response = await httpClient.PutAsync($"https://api.restful-api.dev/objects/{id}", content);
+            response.EnsureSuccessStatusCode();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<APIObject>(responseJson);
+        }
+
+
+        // Partially Update the record 
+        [HttpPatch("{Id}")]
+        public void Patch ()
+        {
+
         }
 
         // DELETE api/<HttpController>/5
         [HttpDelete("{id}")]
+
         public void Delete(int id)
         {
         }
