@@ -1,6 +1,7 @@
 ﻿using ConsumingAPI_Project.Model;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -92,16 +93,37 @@ namespace ConsumingAPI_Project.Controllers
 
         // Partially Update the record 
         [HttpPatch("{Id}")]
-        public void Patch ()
+        public async Task<APIObject> PartiallyUpdateObjectAync (string Id, PartialUpdateApiObjectRequest partialUpdateApi)
         {
+            var httpClient = new HttpClient();
 
+            var json = JsonConvert.SerializeObject(partialUpdateApi);
+
+            var content = new StringContent(json, Encoding.UTF8, "");
+
+            var response = await httpClient.PatchAsync($"https://api.restful-api.dev/objects/{Id}", content);
+
+            response.EnsureSuccessStatusCode();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<APIObject>(responseJson);
         }
+
 
         // DELETE api/<HttpController>/5
         [HttpDelete("{id}")]
 
-        public void Delete(int id)
+        public async Task<DeleteApiObjectResponse> DeleteApiObjectAsync (string id)
         {
+            var httpClient = new HttpClient();
+            var response = await httpClient.DeleteAsync($"https://api.restful-api.dev/objects/ {id}");
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<DeleteApiObjectResponse>(json);
         }
     }
 }
