@@ -29,7 +29,7 @@ namespace ConsumingAPI_Project.Controllers
             var response = await httpClient.GetAsync($"{_baseUrl}/Object");
             {
                 string apiResponse = await response.Content.ReadAsStringAsync();
-                apiObjects = JsonConvert.DeserializeObject<List<APIObject>>(apiResponse) 
+                apiObjects = JsonConvert.DeserializeObject<List<APIObject>>(apiResponse)
                     ?? new List<APIObject>();
             }
 
