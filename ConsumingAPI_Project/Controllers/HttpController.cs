@@ -25,13 +25,12 @@ namespace ConsumingAPI_Project.Controllers
         {
             List<APIObject> apiObjects = new List<APIObject>();
 
-            var httpClient = new HttpClient();
-            var response = await httpClient.GetAsync($"{_baseUrl}/Object");
-            {
-                string apiResponse = await response.Content.ReadAsStringAsync();
-                apiObjects = JsonConvert.DeserializeObject<List<APIObject>>(apiResponse)
-                    ?? new List<APIObject>();
-            }
+            var client = new HttpClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}objects");
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadAsStringAsync();
+            apiObjects = JsonConvert.DeserializeObject<List<APIObject>>(result)!;
 
             return apiObjects;
         }
