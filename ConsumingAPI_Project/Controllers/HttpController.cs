@@ -39,13 +39,14 @@ namespace ConsumingAPI_Project.Controllers
         [HttpGet("{id}Get/requestById")]
         public async Task<APIObject?> GetObjectIdAsync(string Id)
         {
-            APIObject? aPIObject = null;
             var httpClient = new HttpClient();
-            var response = await httpClient.GetAsync($"{_baseUrl}/objects?id=3&id=5&id=10" + Id);
-            {
-                string apiResponse = await response.Content.ReadAsStringAsync();
-                aPIObject = JsonConvert.DeserializeObject<APIObject>(apiResponse);
-            }
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}{Id}");
+            var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            string apiResponse = await response.Content.ReadAsStringAsync();
+            var aPIObject = JsonConvert.DeserializeObject<APIObject>(apiResponse);
+
             return aPIObject;
         }
 
