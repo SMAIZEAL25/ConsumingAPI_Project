@@ -37,17 +37,55 @@ namespace ConsumingAPI_Project.Controllers
 
         // GET api/<HttpController>/5
         [HttpGet("{id}Get/requestById")]
-        public async Task<APIObject?> GetObjectIdAsync(string Id)
+        public async Task<APIObject?> GetObjectIdAsync(string id)
         {
+            // Use a single, shared HttpClient instance (injected or static)
             var httpClient = new HttpClient();
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}{Id}");
-            var response = await httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
 
-            string apiResponse = await response.Content.ReadAsStringAsync();
-            var aPIObject = JsonConvert.DeserializeObject<APIObject>(apiResponse);
+            try
+            {
+                // Construct the full URL
+                var url = $"{_baseUrl}{id}";
 
-            return aPIObject;
+                // Send the GET request
+                var response = await httpClient.GetAsync(url);
+
+                // Check if the response is successful
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the response content
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+
+                    // Deserialize the JSON response
+                    var apiObject = JsonConvert.DeserializeObject<APIObject>(apiResponse);
+
+                    // Return the deserialized object
+                    return apiObject;
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    // Handle 404 Not Found
+                    Console.WriteLine($"Resource with id {id} not found.");
+                    return null;
+                }
+                else
+                {
+                    // Handle other non-success status codes
+                    Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                    return null;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle request exceptions (e.g., network issues)
+                Console.WriteLine($"Request error: {ex.Message}");
+                return null;
+            }
+            finally
+            {
+                // Dispose of the HttpClient instance if not reused
+                httpClient.Dispose();
+            }
         }
 
         // POST api/<HttpController>

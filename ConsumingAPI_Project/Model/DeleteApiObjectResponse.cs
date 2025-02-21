@@ -5,6 +5,6 @@ namespace ConsumingAPI_Project.Model
     public class DeleteApiObjectResponse
     {
         [JsonProperty("message")]
-        public string? Message { get; set; }
+        public string? Id { get; set; }
     }
 }
