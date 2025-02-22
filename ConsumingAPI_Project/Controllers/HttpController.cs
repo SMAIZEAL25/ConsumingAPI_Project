@@ -95,22 +95,33 @@ namespace ConsumingAPI_Project.Controllers
 
         // POST api/<HttpController>
         [HttpPost]
-        public async Task<APIObject?> CreatedObjectAsync(CreateAPIObjectRequest request)
+        public async Task <ActionResult<APIObject?>> CreatedObjectAsync(CreateAPIObjectRequest request)
         {
             APIObject? aPIObject = null;
             var httpClient = new HttpClient();
-            var json = JsonConvert.SerializeObject(request);
+            try
+            {
+                var json = JsonConvert.SerializeObject(request);
 
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync($"{_baseUrl}/objects", content);
+                var response = await httpClient.PostAsync($"https://api.restful-api.dev/objects", content);
 
-            response.EnsureSuccessStatusCode();
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            aPIObject = JsonConvert.DeserializeObject<APIObject>(responseJson);
-            return aPIObject;
+               if (response.IsSuccessStatusCode)
+                {
+                    var responseJson = await response.Content.ReadAsStringAsync();
+                    aPIObject = JsonConvert.DeserializeObject<APIObject>(responseJson);
+                    return aPIObject;
+                }  else  {
+                    return StatusCode 
+                        ((int) response.StatusCode, $"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                }
+            }
+             catch (HttpRequestException ex)
+            { 
+                return StatusCode(500, $"Request error: {ex.Message}");
+            }
+            
         }
 
 
