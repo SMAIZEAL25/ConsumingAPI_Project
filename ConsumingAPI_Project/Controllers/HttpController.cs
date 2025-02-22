@@ -1,7 +1,9 @@
 ﻿using ConsumingAPI_Project.Model;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Linq.Expressions;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace ConsumingAPI_Project.Controllers
 {
@@ -11,12 +13,17 @@ namespace ConsumingAPI_Project.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly string _baseUrl;
+        private readonly HttpClient _httpClient;
+        
 
-        public HttpController(IConfiguration configuration)
+        public HttpController(IConfiguration configuration, HttpClient httpClient)
         {
             _configuration = configuration;
             _baseUrl = _configuration["baseurl"] ?? throw new ArgumentNullException("Base URL not configured");
+            _httpClient = httpClient;
         }
+
+
 
         // GET: api/<HttpController>
         [HttpGet]
@@ -35,9 +42,11 @@ namespace ConsumingAPI_Project.Controllers
             return apiObjects;
         }
 
+
+
         // GET api/<HttpController>/5
         [HttpGet("{id}Get/requestById")]
-        public async Task<APIObject?> GetObjectIdAsync(string id)
+        public async Task<ActionResult<APIObject?>> GetObjectIdAsync(string id)
         {
             // Use a single, shared HttpClient instance (injected or static)
             var httpClient = new HttpClient();
@@ -45,7 +54,7 @@ namespace ConsumingAPI_Project.Controllers
             try
             {
                 // Construct the full URL
-                var url = $"{_baseUrl}{id}";
+                string url = $"https://api.restful-api.dev/objects/{id}";
 
                 // Send the GET request
                 var response = await httpClient.GetAsync(url);
@@ -56,37 +65,33 @@ namespace ConsumingAPI_Project.Controllers
                     // Read the response content
                     string apiResponse = await response.Content.ReadAsStringAsync();
 
-                    // Deserialize the JSON response
-                    var apiObject = JsonConvert.DeserializeObject<APIObject>(apiResponse);
-
-                    // Return the deserialized object
-                    return apiObject;
+                    try
+                    {
+                        var apiObjects = JsonConvert.DeserializeObject<APIObject>(apiResponse);
+                        return Ok(apiObjects);
+                    }
+                    catch (JsonException ex)
+                    {
+                        return StatusCode(500, $"Failed to deserialize the response: {ex.Message}");
+                    }
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    // Handle 404 Not Found
-                    Console.WriteLine($"Resource with id {id} not found.");
-                    return null;
+                    return NotFound($"Resource with id {id} not found");
                 }
                 else
                 {
                     // Handle other non-success status codes
-                    Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
-                    return null;
+                    return StatusCode((int)response.StatusCode, $"Error: {response.StatusCode} - {response.ReasonPhrase}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                // Handle request exceptions (e.g., network issues)
-                Console.WriteLine($"Request error: {ex.Message}");
-                return null;
-            }
-            finally
-            {
-                // Dispose of the HttpClient instance if not reused
-                httpClient.Dispose();
+                return StatusCode(500, $"Request error: {ex.Message}");
             }
         }
+
+
 
         // POST api/<HttpController>
         [HttpPost]
@@ -108,6 +113,7 @@ namespace ConsumingAPI_Project.Controllers
             return aPIObject;
         }
 
+
         // PUT api/<HttpController>/5
         [HttpPut("{id}")]
         public async Task<APIObject?> UpdateObjectAsync(string id, UpdateAPIObject updateAPIObject)
@@ -123,6 +129,7 @@ namespace ConsumingAPI_Project.Controllers
             var responseJson = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<APIObject>(responseJson);
         }
+
 
         // Partially Update the record 
         [HttpPatch("{Id}")]
@@ -142,6 +149,7 @@ namespace ConsumingAPI_Project.Controllers
 
             return JsonConvert.DeserializeObject<APIObject>(responseJson);
         }
+
 
         // DELETE api/<HttpController>/5
         [HttpDelete("{id}")]
