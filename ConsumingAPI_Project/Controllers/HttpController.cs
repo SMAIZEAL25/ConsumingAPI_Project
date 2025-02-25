@@ -12,8 +12,13 @@ namespace ConsumingAPI_Project.Controllers
         private readonly IConfiguration _configuration;
         private readonly string _baseUrl;
         private readonly HttpClient _httpClient;
-        
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpController"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="httpClient">The HTTP client.</param>
+        /// <exception cref="ArgumentNullException">Thrown when base URL is not configured.</exception>
         public HttpController(IConfiguration configuration, HttpClient httpClient)
         {
             _configuration = configuration;
@@ -21,9 +26,10 @@ namespace ConsumingAPI_Project.Controllers
             _httpClient = httpClient;
         }
 
-
-
-        // GET: api/<HttpController>
+        /// <summary>
+        /// Gets all API objects.
+        /// </summary>
+        /// <returns>A list of API objects.</returns>
         [HttpGet]
         [Route("Get/AllObject")]
         public async Task<IActionResult> GetAPIObjectsAsync()
@@ -50,10 +56,11 @@ namespace ConsumingAPI_Project.Controllers
             }
         }
 
-
-
-
-        // GET api/<HttpController>/5
+        /// <summary>
+        /// Gets the API object by ID.
+        /// </summary>
+        /// <param name="id">The ID of the API object.</param>
+        /// <returns>The API object with the specified ID.</returns>
         [HttpGet("{id}Get/requestById")]
         public async Task<IActionResult> GetObjectIdAsync(string id)
         {
@@ -97,9 +104,11 @@ namespace ConsumingAPI_Project.Controllers
             }
         }
 
-
-
-        // POST api/<HttpController>
+        /// <summary>
+        /// Creates a new API object.
+        /// </summary>
+        /// <param name="request">The request containing the details of the API object to create.</param>
+        /// <returns>The created API object.</returns>
         [HttpPost]
         public async Task<IActionResult> CreatedObjectAsync(CreateAPIObjectRequest request)
         {
@@ -127,10 +136,12 @@ namespace ConsumingAPI_Project.Controllers
             }
         }
 
-
-
-
-        // PUT api/<HttpController>/5
+        /// <summary>
+        /// Updates an existing API object.
+        /// </summary>
+        /// <param name="id">The ID of the API object to update.</param>
+        /// <param name="updateAPIObject">The updated details of the API object.</param>
+        /// <returns>The updated API object.</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateObjectAsync(string id, UpdateAPIObject updateAPIObject)
         {
@@ -158,8 +169,12 @@ namespace ConsumingAPI_Project.Controllers
             }
         }
 
-
-        // Partially Update the record 
+        /// <summary>
+        /// Partially updates an existing API object.
+        /// </summary>
+        /// <param name="Id">The ID of the API object to update.</param>
+        /// <param name="partialUpdateApi">The partial update details of the API object.</param>
+        /// <returns>The updated API object.</returns>
         [HttpPatch("{Id}")]
         public async Task<IActionResult> PartiallyUpdateObjectAync(string Id, PartialUpdateApiObjectRequest partialUpdateApi)
         {
@@ -187,8 +202,11 @@ namespace ConsumingAPI_Project.Controllers
             }
         }
 
-
-        // DELETE api/<HttpController>/5
+        /// <summary>
+        /// Deletes an API object by ID.
+        /// </summary>
+        /// <param name="id">The ID of the API object to delete.</param>
+        /// <returns>The response indicating the result of the delete operation.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteApiObjectAsync(string id)
         {
